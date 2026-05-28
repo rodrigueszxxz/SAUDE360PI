@@ -1,0 +1,20 @@
+# Dependências
+node_modules/
+**/node_modules/
+
+# Variáveis de ambiente (NUNCA comitar)
+.env
+**/.env
+!**/.env.example
+!**/.env.local.example
+
+# Build do frontend
+saude360_frontend/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
