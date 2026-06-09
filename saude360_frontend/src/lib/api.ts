@@ -1,7 +1,7 @@
 
 
-// Se não tiver VITE_API_URL, assume que o backend está na mesma máquina/IP, mas na porta 3002
-const API_BASE = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3002`;
+// Se não tiver VITE_API_URL, usa caminhos relativos para passar pelo proxy do Vite
+const API_BASE = import.meta.env.VITE_API_URL || "";
 // Apenas loga em desenvolvimento
 if (import.meta.env.DEV) {
   console.log('🔧 API_BASE:', API_BASE);
