@@ -5,6 +5,10 @@
  */
 const supabase = require('../config/db');
 
+// SEGURANÇA: Nunca permitir dumps ilimitados do banco via query params
+const MAX_LIMIT = 100;
+const MAX_AUDIT_LIMIT = 200;
+
 async function kpisGerais(req, res) {
   try {
     const hoje = new Date().toISOString().split('T')[0];
@@ -258,13 +262,15 @@ async function ocupacaoPorDia(req, res) {
 async function listarAuditoria(req, res) {
   try {
     const { acao, usuario_id, entidade, data_inicio, data_fim, page = 1, limit = 50 } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
+    // SEGURANÇA: Cap no limit para evitar dumps do banco
+    const limiteSanitizado = Math.min(Math.max(1, Number(limit)), MAX_AUDIT_LIMIT);
+    const offset = (Math.max(1, Number(page)) - 1) * limiteSanitizado;
 
     let query = supabase
       .from('audit_log')
       .select('*', { count: 'exact' })
       .order('criado_em', { ascending: false })
-      .range(offset, offset + Number(limit) - 1);
+      .range(offset, offset + limiteSanitizado - 1);
 
     if (acao)        query = query.eq('acao', acao);
     if (usuario_id)  query = query.eq('usuario_id', usuario_id);
@@ -275,7 +281,7 @@ async function listarAuditoria(req, res) {
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);
 
-    res.json({ dados: data || [], total: count, pagina: Number(page), limite: Number(limit) });
+    res.json({ dados: data || [], total: count, pagina: Math.max(1, Number(page)), limite: limiteSanitizado });
   } catch (err) {
     console.error('[admin auditoria]', err.message);
     res.status(500).json({ erro: 'Erro ao buscar auditoria' });
@@ -345,13 +351,15 @@ async function exportarDadosPaciente(req, res) {
 async function listarUsuarios(req, res) {
   try {
     const { papel, ativo, page = 1, limit = 50 } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
+    // SEGURANÇA: Cap no limit para evitar dumps do banco
+    const limiteSanitizado = Math.min(Math.max(1, Number(limit)), MAX_LIMIT);
+    const offset = (Math.max(1, Number(page)) - 1) * limiteSanitizado;
 
     let query = supabase
       .from('usuarios')
       .select('id, nome, email, cpf, crm, papel, ativo, criado_em, atualizado_em', { count: 'exact' })
       .order('criado_em', { ascending: false })
-      .range(offset, offset + Number(limit) - 1);
+      .range(offset, offset + limiteSanitizado - 1);
 
     if (papel) query = query.eq('papel', papel);
     if (ativo !== undefined) query = query.eq('ativo', ativo === 'true');
@@ -359,7 +367,7 @@ async function listarUsuarios(req, res) {
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);
 
-    res.json({ dados: data || [], total: count, pagina: Number(page), limite: Number(limit) });
+    res.json({ dados: data || [], total: count, pagina: Math.max(1, Number(page)), limite: limiteSanitizado });
   } catch (err) {
     console.error('[admin usuarios]', err.message);
     res.status(500).json({ erro: 'Erro ao listar usuários' });

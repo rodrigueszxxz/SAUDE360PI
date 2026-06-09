@@ -4,6 +4,7 @@ const jwt      = require('jsonwebtoken');
 const crypto   = require('crypto');
 const { body, validationResult } = require('express-validator');
 const supabase = require('../config/db');
+const { auditarFalhaLogin, extrairIP } = require('../middlewares/auditoria');
 
 const router = express.Router();
 
@@ -100,6 +101,8 @@ router.post('/login', validarLogin, async (req, res) => {
     const hash = usuario ? usuario.senha_hash : '$2b$12$invalidhashtopreventtimingattacks000000000000';
     const ok = await bcrypt.compare(senha, hash);
     if (!usuario || !ok || !usuario.ativo) {
+      // AUDITORIA: registrar tentativas de login com falha para detectar brute-force
+      auditarFalhaLogin(email, extrairIP(req), req.headers['user-agent']).catch(() => {});
       return res.status(401).json({ erro: 'E-mail ou senha incorretos' });
     }
     setRefreshCookie(res, gerarRefreshToken(usuario.id));
@@ -160,8 +163,11 @@ router.post(
         { usuario_id: rows[0].id, token, expira_em, usado: false },
       ]);
       // Em produção: enviar e-mail com link /redefinir-senha?token=<token>
-      console.log(`[esqueci-senha] token para ${email}: ${token}`);
-      return res.json({ mensagem: 'Se o e-mail estiver cadastrado, você receberá as instruções.', debug_token: process.env.NODE_ENV !== 'production' ? token : undefined });
+      // Em desenvolvimento: apenas loga no console (NUNCA retornar token na resposta HTTP)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[esqueci-senha] token para ${email}: ${token}`);
+      }
+      return res.json({ mensagem: 'Se o e-mail estiver cadastrado, você receberá as instruções.' });
     } catch (err) {
       console.error('[esqueci-senha]', err.message);
       return res.status(500).json({ erro: 'Erro ao processar solicitação' });

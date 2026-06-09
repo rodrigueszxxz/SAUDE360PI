@@ -1,5 +1,4 @@
 const pagamentoRepository = require('../repositories/pagamentoRepository');
-const stripeService = require('./stripeService');
 const supabase = require('../config/db');
 const crypto = require('crypto');
 
@@ -34,59 +33,6 @@ function calcularValor(valor, convenio) {
   return Number(valorNum.toFixed(2));
 }
 
-async function criarCheckoutStripe({ nome, cpf, valor, agendamento_id, convenio, carteirinha, nome_titular, validade_plano }) {
-  if (!nome || !cpf) throw new Error('Nome e CPF são obrigatórios');
-
-  const valorFinal = calcularValor(valor, convenio);
-
-  if (convenio && convenio !== 'Particular') {
-    if (!carteirinha || !nome_titular || !validade_plano) {
-      throw new Error('Para convênio, informe a carteirinha, nome do titular e validade');
-    }
-    const validade = new Date(validade_plano);
-    const agora = new Date();
-    // Considera o plano válido até o último dia do mês
-    agora.setDate(1);
-    agora.setHours(0, 0, 0, 0);
-    if (isNaN(validade.getTime()) || validade < agora) {
-      throw new Error('Convênio vencido ou validade inválida');
-    }
-  }
-
-  const pagamento = await pagamentoRepository.criar({
-    nome,
-    cpf,
-    valor: valorFinal,
-    agendamento_id: agendamento_id || null,
-  });
-
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const valorCentavos = Math.round(valorFinal * 100);
-
-  const { session_id, checkout_url, expires_at } = await stripeService.criarCheckoutSession({
-    agendamento_id,
-    pagamento_id: pagamento.id,
-    nome_paciente: nome,
-    cpf,
-    valor_centavos: valorCentavos,
-    descricao: `Consulta Médica — Saúde360${convenio && convenio !== 'Particular' ? ` (${convenio})` : ''}`,
-    success_url: `${frontendUrl}/pagamento/sucesso?session_id={CHECKOUT_SESSION_ID}&pagamento_id=${pagamento.id}`,
-    cancel_url: `${frontendUrl}/pagamento/cancelado?pagamento_id=${pagamento.id}&agendamento_id=${agendamento_id || ''}`,
-    metadata: { convenio: convenio || 'Particular' },
-  });
-
-  await supabase.from('pagamentos').update({
-    stripe_session_id: session_id,
-    expira_em: expires_at,
-  }).eq('id', pagamento.id);
-
-  return {
-    pagamento: { ...pagamento, stripe_session_id: session_id },
-    checkout_url,
-    session_id,
-    valor_final: valorFinal,
-  };
-}
 
 async function criarPix(nome, cpf, valor, agendamento_id, convenio, carteirinha, nome_titular, validade_plano) {
   if (!nome || !cpf) throw new Error('Nome e CPF são obrigatórios');
@@ -161,20 +107,6 @@ async function consultarPagamento(id) {
   const pagamento = await pagamentoRepository.buscarPorId(id);
   if (!pagamento) throw new Error('Pagamento não encontrado');
 
-  if (pagamento.stripe_session_id && pagamento.status === 'PENDENTE') {
-    try {
-      const session = await stripeService.buscarSession(pagamento.stripe_session_id);
-      if (session.payment_status === 'paid' && pagamento.status !== 'PAGO') {
-        const atualizado = await pagamentoRepository.atualizarStatus(pagamento.id, 'PAGO', {
-          stripe_payment_intent: session.payment_intent,
-        });
-        return atualizado;
-      }
-    } catch (err) {
-      console.warn('[pagamentoService] Falha ao verificar sessão Stripe:', err.message);
-    }
-  }
-
   return pagamento;
 }
 
@@ -242,4 +174,4 @@ async function verificarExpirados() {
   }
 }
 
-module.exports = { criarCheckoutStripe, criarPix, criarBoleto, consultarPagamento, confirmarPagamento, verificarExpirados };
+module.exports = { criarPix, criarBoleto, consultarPagamento, confirmarPagamento, verificarExpirados };

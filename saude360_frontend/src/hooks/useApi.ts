@@ -15,6 +15,7 @@ import {
   perfilApi,
   listaEsperaApi,
   notificacoesApi,
+  adminApi,
 } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -134,24 +135,6 @@ export function useCriarBoleto() {
     mutationFn: (body: CriarPixPayload) => pagamentoApi.criarBoleto(body),
     onError: (err: Error) => {
       toast({ title: 'Erro ao gerar Boleto', description: err.message, variant: 'destructive' });
-    },
-  });
-}
-
-export function useCriarCheckoutStripe() {
-  const { toast } = useToast();
-  return useMutation({
-    mutationFn: (body: {
-      nome?: string;
-      cpf?: string;
-      agendamento_id?: number;
-      convenio?: string;
-      carteirinha?: string;
-      nome_titular?: string;
-      validade_plano?: string;
-    }) => pagamentoApi.criarCheckout(body),
-    onError: (err: Error) => {
-      toast({ title: 'Erro ao iniciar pagamento', description: err.message, variant: 'destructive' });
     },
   });
 }
@@ -318,6 +301,56 @@ export function useEntrarFilaEspera() {
     mutationFn: (body: { medico_id: string; data_alvo: string; horario_alvo?: string }) => listaEsperaApi.entrar(body),
     onSuccess: () => toast({ title: 'Adicionado à fila de espera!', description: 'Avisaremos assim que houver vaga.' }),
     onError: (err: Error) => toast({ title: 'Erro na fila', description: err.message, variant: 'destructive' }),
+  });
+}
+
+export function useAdminListaEspera() {
+  return useQuery({
+    queryKey: ['admin-lista-espera'],
+    queryFn: adminApi.listaEspera,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useAdminConfirmarEncaixe() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.confirmarEncaixe(id),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-lista-espera'] });
+      toast({ title: 'Encaixe Confirmado', description: data.mensagem });
+    },
+    onError: (err: Error) => toast({ title: 'Erro ao encaixar', description: err.message, variant: 'destructive' }),
+  });
+}
+
+export function useAdminPularFila() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.pularFila(id),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-lista-espera'] });
+      toast({ title: 'Fila atualizada', description: data.mensagem });
+    },
+    onError: (err: Error) => toast({ title: 'Erro ao pular fila', description: err.message, variant: 'destructive' }),
+  });
+}
+
+// ── Admin Dashboards ──────────────────────────────────────────────────────────
+export function useAdminKpis() {
+  return useQuery({
+    queryKey: ['admin-kpis'],
+    queryFn: adminApi.kpis,
+    refetchInterval: 60_000,
+  });
+}
+
+export function useAdminFaturamento(params?: Record<string, string>) {
+  return useQuery({
+    queryKey: ['admin-faturamento', params],
+    queryFn: () => adminApi.faturamento(params),
   });
 }
 

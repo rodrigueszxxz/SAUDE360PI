@@ -52,7 +52,6 @@ const navPorPapel: Record<Role, { label: string; items: { to: string; label: str
       items: [
         { to: "/admin/painel",         label: "Painel da Recepção",   icon: UserCog },
         { to: "/admin/lista-espera",   label: "Lista de Espera",      icon: ListChecks },
-        { to: "/admin/indicadores",    label: "Indicadores",          icon: Activity },
         { to: "/admin/kpis",           label: "KPIs",                 icon: BarChart3 },
       ],
     },
@@ -82,8 +81,8 @@ export const Sidebar = () => {
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar h-screen sticky top-0">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 h-16 border-b border-sidebar-border">
-        <img src="/logo.png" alt="Saúde 360" className="h-8 object-contain" />
+      <div className="flex items-center gap-2.5 px-5 h-20 border-b border-sidebar-border">
+        <img src="/logo.png" alt="Saúde 360" className="h-10 object-contain" />
         <div>
           <p className="text-sm font-semibold text-foreground leading-tight">Saúde 360</p>
           <p className="text-[11px] text-muted-foreground leading-tight">{papelLabel[user.papel]}</p>

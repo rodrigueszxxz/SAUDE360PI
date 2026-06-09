@@ -2,10 +2,8 @@ const express          = require('express');
 const router           = express.Router();
 const medicoController = require('../controllers/medicoController');
 
-// TODO (Alisson): descomentar quando JWT estiver pronto
-// const { autenticar } = require('../middlewares/autenticacao');
-// router.get('/', autenticar, medicoController.listar);
-
+// Lista de médicos é pública — necessária para BuscaMedicos sem login
+// Dados retornados são apenas: nome, especialidade, foto, NPS (sem dados sensíveis)
 router.get('/', medicoController.listar);
 
 module.exports = router;

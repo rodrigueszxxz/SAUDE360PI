@@ -8,7 +8,7 @@ import {
   CheckCircle2, RefreshCw, AlertCircle, Smartphone, Video,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { useCriarPix, useCriarBoleto, usePagamento, useAgendamento, useCriarCheckoutStripe } from "@/hooks/useApi";
+import { useCriarPix, useCriarBoleto, usePagamento, useAgendamento } from "@/hooks/useApi";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch, pagamentoApi } from "@/lib/api";
@@ -88,7 +88,7 @@ const Pagamento = () => {
 
   const criarPix = useCriarPix();
   const criarBoleto = useCriarBoleto();
-  const criarCheckout = useCriarCheckoutStripe();
+
 
   // Buscar todos os pagamentos do usuário para ver se já tem um pendente para esta consulta
   const { data: meusPagamentos } = useQuery({
@@ -121,7 +121,7 @@ const Pagamento = () => {
           // Sem QR = teleconsulta ou erro silencioso — não bloqueia o fluxo
         });
     }
-  }, [pagamento?.status, agendamentoId, qrData]);
+  }, [isPago, pagamento?.status, agendamentoId, qrData]);
 
   // Idem para pagamento via cartão
   useEffect(() => {
@@ -546,8 +546,7 @@ const Pagamento = () => {
           )}
           {metodo === "cartao" && !cardPaid && (
             <button
-              onClick={handlePagarCartao}
-              disabled={cardPaying || criarCheckout.isPending}
+              disabled={cardPaying || criarPix.isPending}
               className="w-full inline-flex items-center justify-center gap-2 mt-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary-glow shadow-sm disabled:opacity-50 transition-colors"
             >
               <Lock className="h-4 w-4" /> Ir para checkout seguro

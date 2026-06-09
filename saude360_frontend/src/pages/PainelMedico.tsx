@@ -52,21 +52,24 @@ const PainelMedico = () => {
 
       {/* Alerta: paciente em atendimento */}
       {emAndamento && (
-        <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+        <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-primary to-primary-glow text-white shadow-lg flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center font-bold text-base border border-white/30 shrink-0">
               {emAndamento.nome?.split(" ").map((n: string) => n[0]).slice(0,2).join("") ?? "??"}
             </div>
             <div>
-              <p className="font-semibold text-sm">{emAndamento.nome ?? "Paciente"} — em atendimento</p>
-              <p className="text-xs text-muted-foreground">{emAndamento.horario?.substring(0,5)} · {emAndamento.tipo_consulta}</p>
+              <p className="font-bold text-base flex items-center gap-2">
+                <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span></span>
+                {emAndamento.nome ?? "Paciente"} — Em atendimento
+              </p>
+              <p className="text-sm text-white/80 font-medium">{emAndamento.horario?.substring(0,5)} · {emAndamento.tipo_consulta}</p>
             </div>
           </div>
           <button
             onClick={() => navigate(`/medico/atendimento/${emAndamento.id}`)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-glow transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-primary text-sm font-bold hover:bg-white/90 transition-colors shadow-sm shrink-0"
           >
-            <PlayCircle className="h-4 w-4" /> Retomar Atendimento
+            <PlayCircle className="h-4 w-4" /> Retomar
           </button>
         </div>
       )}
@@ -94,24 +97,24 @@ const PainelMedico = () => {
                 const finalizado = a.status === "REALIZADO" || a.status === "CANCELADO";
 
                 return (
-                  <li key={a.id} className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors relative group">
+                  <li key={a.id} className="flex items-center gap-4 px-6 py-5 hover:bg-muted/40 transition-colors relative group">
                     {/* Horário */}
                     <div className="text-center w-14 shrink-0">
-                      <p className="text-sm font-semibold">{a.horario ? a.horario.substring(0, 5) : "—"}</p>
-                      <p className="text-[10px] uppercase text-muted-foreground tracking-wider">
+                      <p className="text-base font-bold">{a.horario ? a.horario.substring(0, 5) : "—"}</p>
+                      <p className="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold">
                         {a.tipo_consulta === "TELECONSULTA" ? "Online" : "Presencial"}
                       </p>
                     </div>
 
                     {/* Avatar */}
-                    <div className="h-10 w-10 rounded-full bg-primary-soft text-primary flex items-center justify-center font-semibold text-sm shrink-0">
+                    <div className="h-12 w-12 rounded-full bg-primary-soft text-primary flex items-center justify-center font-bold text-sm shrink-0">
                       {a.nome ? a.nome.split(" ").map((n: string) => n[0]).slice(0,2).join("") : "??"}
                     </div>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{a.nome ?? "Paciente"}</p>
-                      <p className="text-xs text-muted-foreground">{a.tipo_consulta}</p>
+                      <p className="font-bold text-base truncate">{a.nome ?? "Paciente"}</p>
+                      <p className="text-xs text-muted-foreground font-medium">{a.tipo_consulta}</p>
                     </div>
 
                     {/* Badge de status */}
@@ -120,18 +123,18 @@ const PainelMedico = () => {
                     </div>
 
                     {/* Botões de ação */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0">
                       {/* Videochamada para teleconsulta */}
                       {a.tipo_consulta === "TELECONSULTA" && !finalizado && (
                         <a
                           href="https://meet.google.com/new"
                           target="_blank"
                           rel="noreferrer"
-                          className="h-9 w-9 rounded-lg border border-border hover:bg-muted flex items-center justify-center text-primary"
+                          className="h-10 w-10 rounded-xl border border-border hover:bg-muted flex items-center justify-center text-primary"
                           title="Iniciar videochamada"
                           onClick={e => e.stopPropagation()}
                         >
-                          <Video className="h-4 w-4" />
+                          <Video className="h-5 w-5" />
                         </a>
                       )}
 
@@ -139,27 +142,27 @@ const PainelMedico = () => {
                       {podeIniciar && (
                         <button
                           onClick={() => navigate(`/medico/atendimento/${a.id}`)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary-glow transition-colors shadow-sm"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary-glow transition-colors shadow-sm"
                         >
-                          <PlayCircle className="h-3.5 w-3.5" />
+                          <PlayCircle className="h-4 w-4" />
                           Iniciar
                         </button>
                       )}
                       {jaAtendendo && (
                         <button
                           onClick={() => navigate(`/medico/atendimento/${a.id}`)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/80 text-warning-foreground text-xs font-semibold hover:bg-warning transition-colors shadow-sm"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-warning/80 text-warning-foreground text-sm font-bold hover:bg-warning transition-colors shadow-sm"
                         >
-                          <PlayCircle className="h-3.5 w-3.5" />
+                          <PlayCircle className="h-4 w-4" />
                           Retomar
                         </button>
                       )}
                       {finalizado && (
                         <button
                           onClick={() => navigate(`/medico/prontuario/${a.id}`)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-bold hover:bg-muted transition-colors"
                         >
-                          <Eye className="h-3.5 w-3.5" />
+                          <Eye className="h-4 w-4" />
                           Ver
                         </button>
                       )}
@@ -168,9 +171,9 @@ const PainelMedico = () => {
                       <div className="relative">
                         <button
                           onClick={() => setDropdownOpen(dropdownOpen === a.id ? null : a.id)}
-                          className="h-9 w-9 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground"
+                          className="h-10 w-10 rounded-xl hover:bg-muted flex items-center justify-center text-muted-foreground"
                         >
-                          <ChevronRight className={`h-4 w-4 transition-transform ${dropdownOpen === a.id ? 'rotate-90' : ''}`} />
+                          <ChevronRight className={`h-5 w-5 transition-transform ${dropdownOpen === a.id ? 'rotate-90' : ''}`} />
                         </button>
 
                         {dropdownOpen === a.id && (
@@ -216,13 +219,13 @@ const PainelMedico = () => {
                 <p className="text-xs text-muted-foreground mb-5">
                   {proximoAgendamento.tipo_consulta} · {proximoAgendamento.horario?.substring(0, 5) ?? ""}
                 </p>
-                <div className="flex gap-2">
-                  <button className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-border text-sm hover:bg-muted transition-colors">
+                <div className="flex gap-3">
+                  <button className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-semibold hover:bg-muted transition-colors">
                     <Phone className="h-4 w-4" /> Ligar
                   </button>
                   <button
                     onClick={() => navigate(`/medico/atendimento/${proximoAgendamento.id}`)}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-glow transition-colors"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-glow transition-colors"
                   >
                     <PlayCircle className="h-4 w-4" /> Iniciar
                   </button>

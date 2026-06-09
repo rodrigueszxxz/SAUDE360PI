@@ -36,4 +36,90 @@ async function minhasListas(req, res) {
   }
 }
 
-module.exports = { entrarNaFila, minhasListas };
+async function listarAdmin(req, res) {
+  try {
+    const { data: filas, error } = await require('../config/db')
+      .from('lista_espera')
+      .select(`
+        id, data, horario, nome, whatsapp, posicao, status, criado_em,
+        medicos(nome, especialidade)
+      `)
+      .eq('status', 'AGUARDANDO')
+      .order('data', { ascending: true })
+      .order('posicao', { ascending: true });
+
+    if (error) throw new Error(error.message);
+    res.json(filas || []);
+  } catch (err) {
+    console.error('Erro ao listar fila admin:', err.message);
+    res.status(500).json({ erro: 'Erro ao listar fila de espera' });
+  }
+}
+
+async function confirmarEncaixe(req, res) {
+  try {
+    const { id } = req.params;
+    
+    // Atualiza status na lista
+    const { data: item, error } = await require('../config/db')
+      .from('lista_espera')
+      .update({ status: 'NOTIFICADO' })
+      .eq('id', id)
+      .select('*, medicos(nome)')
+      .single();
+
+    if (error) throw new Error(error.message);
+
+    // Tenta encontrar o usuário pelo whatsapp/nome para notificar (opcional)
+    const { data: user } = await require('../config/db')
+      .from('usuarios')
+      .select('id')
+      .eq('whatsapp', item.whatsapp)
+      .limit(1)
+      .single();
+
+    if (user) {
+      await require('../services/notificacoesService').criarNotificacao(
+        user.id,
+        'Encaixe Confirmado',
+        `Sua vaga com ${item.medicos?.nome || 'o médico'} foi confirmada!`
+      );
+    }
+    
+    // Notifica o médico
+    if (item.medico_id) {
+      await require('../services/notificacoesService').criarNotificacao(
+        item.medico_id,
+        'Novo Encaixe',
+        `Paciente ${item.nome} foi encaixado na sua agenda.`
+      );
+    }
+
+    res.json({ mensagem: 'Encaixe confirmado com sucesso', item });
+  } catch (err) {
+    console.error('Erro ao confirmar encaixe:', err.message);
+    res.status(500).json({ erro: 'Erro ao confirmar encaixe' });
+  }
+}
+
+async function proximoFila(req, res) {
+  try {
+    const { id } = req.params;
+    
+    const { data: item, error } = await require('../config/db')
+      .from('lista_espera')
+      .update({ status: 'PULADO' })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+
+    res.json({ mensagem: 'Paciente pulado, chamando o próximo.', item });
+  } catch (err) {
+    console.error('Erro ao pular paciente:', err.message);
+    res.status(500).json({ erro: 'Erro ao chamar o próximo da fila' });
+  }
+}
+
+module.exports = { entrarNaFila, minhasListas, listarAdmin, confirmarEncaixe, proximoFila };

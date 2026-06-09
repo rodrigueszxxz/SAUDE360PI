@@ -71,13 +71,15 @@ router.post('/mensagem', chatLimiter, autenticar, async (req, res) => {
 
 router.get('/historico', autenticar, async (req, res) => {
   const { limit = 20 } = req.query;
+  // SEGURANÇA: nunca retornar mais de 100 mensagens de uma vez
+  const limiteSanitizado = Math.min(Math.max(1, Number(limit) || 20), 100);
   try {
     const { data } = await supabase
       .from('chatbot_historico')
       .select('id, role, mensagem, intent, criado_em')
       .eq('usuario_id', req.usuario.id)
       .order('criado_em', { ascending: false })
-      .limit(Number(limit));
+      .limit(limiteSanitizado);
 
     res.json((data || []).reverse());
   } catch (err) {

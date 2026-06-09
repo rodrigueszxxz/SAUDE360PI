@@ -36,11 +36,11 @@ export const PublicShell = ({ children }: PublicShellProps) => {
     <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header compacto ──────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/95 backdrop-blur-md">
-        <div className="max-w-3xl mx-auto flex h-14 items-center justify-between px-4">
+        <div className="max-w-screen-xl mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Saúde 360" className="h-8 object-contain" />
-            <span className="text-base font-bold tracking-tight text-primary">Saúde 360</span>
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/logo.png" alt="Saúde 360" className="h-12 object-contain" />
+            <span className="text-xl font-bold tracking-tight text-primary">Saúde 360</span>
           </Link>
 
           {/* Ações */}
@@ -124,7 +124,7 @@ export const PublicShell = ({ children }: PublicShellProps) => {
       </header>
 
       {/* ── Conteúdo ─────────────────────────────────────────────── */}
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-5 pb-24 lg:pb-6 animate-fade-in">
+      <main className="flex-1 max-w-screen-xl w-full mx-auto px-4 lg:px-8 py-6 pb-24 lg:pb-8 animate-fade-in">
         {children}
       </main>
 

@@ -4,7 +4,7 @@
  *
  * Canais:
  *  - INTERNO: notificacoes (in-app bell icon)
- *  - WHATSAPP: via whatsappService.js (Twilio)
+ *  - INTERNO: notificacoes (in-app bell icon)
  *
  * Jobs automáticos (via setInterval no app.js):
  *  - Lembretes 24h e 5h antes da consulta
@@ -15,7 +15,6 @@
  *  - Vaga lista de espera     → listaEsperaService
  */
 const supabase = require('../config/db');
-const whatsapp = require('./whatsappService');
 
 async function criarNotificacao(usuario_id, titulo, mensagem, tipo = 'info', link = null) {
   try {
@@ -93,21 +92,7 @@ async function verificarLembretes() {
             '/paciente/portal'
           );
 
-          // Busca WhatsApp do paciente
-          const { data: u } = await supabase.from('usuarios').select('whatsapp').eq('cpf', ag.cpf).single();
-          if (u?.whatsapp) {
-            whatsapp.notificarLembrete24h({
-              whatsapp: u.whatsapp,
-              nome:     ag.nome,
-              medico:   ag.medicos?.nome || 'médico',
-              data:     ag.data_consulta,
-              horario:  ag.horario,
-              tipo:     ag.tipo_consulta,
-              meet_link: null,
-            }).catch(e => console.error('[notif-whatsapp] lembrete24h:', e.message));
-          }
-
-          await registrarLog('LEMBRETE_24H', 'WHATSAPP', ag.cpf, ag.id);
+          await registrarLog('LEMBRETE_24H', 'INTERNO', ag.cpf, ag.id);
         }
       }
 
@@ -163,18 +148,7 @@ async function notificarCancelamento(agendamento) {
       '/paciente/portal'
     );
 
-    // WhatsApp
-    const { data: uWa } = await supabase.from('usuarios').select('whatsapp').eq('cpf', agendamento.cpf).single();
-    if (uWa?.whatsapp) {
-      whatsapp.notificarCancelamento({
-        whatsapp: uWa.whatsapp,
-        nome:     agendamento.nome || 'Paciente',
-        data:     agendamento.data_consulta,
-        horario:  agendamento.horario,
-      }).catch(e => console.error('[notif-whatsapp] cancelamento:', e.message));
-    }
-
-    await registrarLog('CANCELAMENTO', 'WHATSAPP', agendamento.cpf, agendamento.id);
+    await registrarLog('CANCELAMENTO', 'INTERNO', agendamento.cpf, agendamento.id);
   } catch (err) {
     console.error('[notificacaoService] notificarCancelamento:', err.message);
   }

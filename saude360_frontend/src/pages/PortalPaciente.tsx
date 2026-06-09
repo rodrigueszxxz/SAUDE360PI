@@ -10,11 +10,10 @@
  *  ✓ Animações suaves
  */
 import { AppShell } from "@/components/layout/AppShell";
-import { Chip } from "@/components/shared/PageHeader";
 import {
   Calendar, FileText, Download, Video, ChevronRight,
-  MapPin, Loader2, AlertCircle, Clock, Search, Plus,
-  Stethoscope, Info, QrCode, CheckCircle2, RefreshCw,
+  MapPin, AlertCircle, Clock, Search, Plus,
+  Stethoscope, Info, QrCode, RefreshCw,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,9 +24,9 @@ import {
   DialogDescription, DialogFooter, DialogClose,
 } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMedicos, useFavoritos, useToggleFavorito, useMinhaFilaEspera } from "@/hooks/useApi";
-import { Heart, Star, Activity, User, RefreshCw, AlertTriangle } from "lucide-react";
+import { Heart, Star, Activity, User, AlertTriangle } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://anygfqhfmmkqlxegimds.supabase.co";
@@ -192,11 +191,16 @@ const PortalPaciente = () => {
   });
 
   // Detecta consulta recém-finalizada e exibe modal de avaliação
+  const feedbackEnviadosRef = useRef(feedbackEnviados);
+  feedbackEnviadosRef.current = feedbackEnviados;
+  const feedbackAgendamentoRef = useRef(feedbackAgendamento);
+  feedbackAgendamentoRef.current = feedbackAgendamento;
+
   useEffect(() => {
     const realizados = agendamentos.filter(
-      a => a.status === "REALIZADO" && !feedbackEnviados.has(a.id)
+      a => a.status === "REALIZADO" && !feedbackEnviadosRef.current.has(a.id)
     );
-    if (realizados.length > 0 && !feedbackAgendamento) {
+    if (realizados.length > 0 && !feedbackAgendamentoRef.current) {
       setFeedbackAgendamento(realizados[0]);
       setFeedbackNota(0);
       setFeedbackComentario("");
@@ -402,7 +406,7 @@ const PortalPaciente = () => {
                     {proxima.status === "PENDENTE_PAGAMENTO" && (
                       <Link
                         to={`/paciente/pagamento?agendamento_id=${proxima.id}&nome=${encodeURIComponent(user?.nome ?? "")}&cpf=${user?.cpf ?? ""}`}
-                        className="px-4 py-2 rounded-lg bg-white text-primary text-xs font-bold hover:bg-white/90 transition-colors shadow-sm"
+                        className="px-5 py-2.5 rounded-xl bg-white text-primary text-sm font-bold hover:bg-white/90 transition-colors shadow-sm"
                       >
                         Pagar agora
                       </Link>
@@ -412,9 +416,9 @@ const PortalPaciente = () => {
                       ["CONFIRMADO", "AGUARDANDO", "CHECKIN_REALIZADO", "EM_ATENDIMENTO"].includes(proxima.status) && (
                         <Link
                           to={buildTeleconsultaUrl(proxima)}
-                          className="px-4 py-2 rounded-lg bg-white/15 border border-white/25 text-xs font-semibold hover:bg-white/25 transition-colors inline-flex items-center gap-1.5"
+                          className="px-5 py-2.5 rounded-xl bg-white text-primary text-sm font-bold hover:bg-white/90 transition-colors inline-flex items-center gap-2 shadow-sm"
                         >
-                          <Video className="h-3.5 w-3.5" /> Entrar na teleconsulta
+                          <Video className="h-4 w-4" /> Entrar na teleconsulta
                         </Link>
                       )}
                     {/* Botão QR Code — SOMENTE se presencial e confirmado */}
@@ -422,15 +426,15 @@ const PortalPaciente = () => {
                       ["CONFIRMADO", "AGUARDANDO"].includes(proxima.status) && (
                         <Link
                           to={`/paciente/check-in?agendamento_id=${proxima.id}`}
-                          className="px-4 py-2 rounded-lg bg-white/15 border border-white/25 text-xs font-semibold hover:bg-white/25 transition-colors inline-flex items-center gap-1.5"
+                          className="px-5 py-2.5 rounded-xl bg-white text-primary text-sm font-bold hover:bg-white/90 transition-colors inline-flex items-center gap-2 shadow-sm"
                         >
-                          <QrCode className="h-3.5 w-3.5" /> Ver QR Code
+                          <QrCode className="h-4 w-4" /> Ver QR Code
                         </Link>
                       )}
                     <button
                       onClick={() => handleCancelar(proxima.id)}
                       disabled={cancelarAgendamento.isPending}
-                      className="px-4 py-2 rounded-lg border border-white/25 text-xs font-semibold hover:bg-white/10 transition-colors disabled:opacity-50"
+                      className="px-5 py-2.5 rounded-xl border border-white/25 text-sm font-semibold hover:bg-white/10 transition-colors disabled:opacity-50"
                     >
                       Cancelar
                     </button>
@@ -454,10 +458,10 @@ const PortalPaciente = () => {
         )}
 
         {/* ── ATALHOS RÁPIDOS ──────────────────────────────────── */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           {[
             { to: "/busca-medicos",      icon: Stethoscope, label: "Médicos",    color: "bg-primary-soft text-primary"            },
-            { to: "/paciente/historico", icon: FileText,    label: "Histórico",  color: "bg-info-soft text-accent-foreground"     },
+            { to: "/paciente/historico", icon: FileText,    label: "Histórico",  color: "bg-info-soft text-info"                  },
             { to: "/paciente/recibos",   icon: Download,    label: "Recibos",    color: "bg-warning-soft text-warning"            },
             proxima?.tipo_consulta === "TELECONSULTA"
               ? { to: buildTeleconsultaUrl(proxima), icon: Video, label: "Vídeo", color: "bg-info-soft text-info" }
@@ -466,12 +470,12 @@ const PortalPaciente = () => {
             <Link
               key={to}
               to={to}
-              className="card-elevated flex flex-col items-center justify-center gap-2 p-3 rounded-xl hover:shadow-elevated transition-shadow text-center"
+              className="card-elevated flex flex-col items-center justify-center gap-3 p-4 sm:p-5 rounded-2xl hover:shadow-lg transition-all group border-border/40 hover:border-primary/20 bg-card"
             >
-              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${color}`}>
-                <Icon className="h-5 w-5" />
+              <div className={`h-12 w-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${color}`}>
+                <Icon className="h-6 w-6" />
               </div>
-              <span className="text-[11px] font-medium text-foreground leading-tight">{label}</span>
+              <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight">{label}</span>
             </Link>
           ))}
         </div>

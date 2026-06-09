@@ -3,7 +3,6 @@ const supabase              = require('../config/db');
 const crypto                = require('crypto');
 const listaEsperaService    = require('./listaEsperaService');
 const notificacaoService    = require('./notificacaoService');
-const redis                 = require('../config/redis');
 
 function gerarProtocolo() {
   return `S360-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
@@ -57,19 +56,7 @@ async function criarAgendamento(body) {
   }
 
   // Verificar e bloquear slot
-  let lockKey = null;
-
   if (slot_id) {
-    // 1. Lock Distribuído via Redis (Double Booking Prevention)
-    if (redis && redis.status === 'ready') {
-      lockKey = `lock:slot:${slot_id}`;
-      // Tenta setar a chave com expiração de 15s apenas se não existir (NX)
-      const acquired = await redis.set(lockKey, 'LOCKED', 'EX', 15, 'NX');
-      if (!acquired) {
-        throw new Error('Este horário está sendo reservado por outra pessoa neste momento. Escolha outro horário.');
-      }
-    }
-
     try {
       const { data: slot } = await supabase
         .from('agenda_slots')
@@ -88,9 +75,6 @@ async function criarAgendamento(body) {
 
       if (updErr) throw new Error('Erro ao reservar horário');
     } catch (err) {
-      if (lockKey && redis && redis.status === 'ready') {
-        await redis.del(lockKey).catch(() => {});
-      }
       throw err;
     }
   } else if (data_consulta && horario && medico_id) {
@@ -166,11 +150,6 @@ async function criarAgendamento(body) {
         `/paciente/pagamento`
       );
     }
-  }
-
-  // Remove o lock do redis após concluir o processo para que, em caso de erro posterior ou sucesso, a concorrência volte a depender do DB
-  if (lockKey && redis && redis.status === 'ready') {
-    await redis.del(lockKey).catch(() => {});
   }
 
   return agendamento;

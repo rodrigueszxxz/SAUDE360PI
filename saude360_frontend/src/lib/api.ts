@@ -1,6 +1,7 @@
 
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3002";
+// Se não tiver VITE_API_URL, assume que o backend está na mesma máquina/IP, mas na porta 3002
+const API_BASE = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3002`;
 // Apenas loga em desenvolvimento
 if (import.meta.env.DEV) {
   console.log('🔧 API_BASE:', API_BASE);
@@ -205,15 +206,6 @@ export const pagamentoApi = {
   // Backend retorna { mensagem: string, pagamento: Pagamento }
   criarPix: (body: CriarPixPayload) => api.post<{ mensagem: string; pagamento: Pagamento }>('/pagamentos/pix', body),
   criarBoleto: (body: CriarPixPayload) => api.post<{ mensagem: string; pagamento: Pagamento }>('/pagamentos/boleto', body),
-  criarCheckout: (body: {
-    nome?: string;
-    cpf?: string;
-    agendamento_id?: number;
-    convenio?: string;
-    carteirinha?: string;
-    nome_titular?: string;
-    validade_plano?: string;
-  }) => api.post<{ mensagem: string; checkout_url: string; session_id: string; pagamento: Pagamento; valor_final: number }>('/pagamentos/checkout', body),
   consultar: (id: number) => api.get<Pagamento>(`/pagamentos/${id}`),
   meus: () => api.get<Pagamento[]>('/pagamentos/meus'),
   // Usa o token em memória (_accessToken) — NUNCA localStorage
@@ -270,7 +262,9 @@ export const publicoApi = {
 };
 
 export const adminApi = {
-  listaEspera: () => api.get("/triagem/lista-espera"),
+  listaEspera: () => api.get<any[]>("/lista-espera/admin"),
+  confirmarEncaixe: (id: number) => api.post<{mensagem: string; item: any}>(`/lista-espera/admin/${id}/encaixar`, {}),
+  pularFila: (id: number) => api.post<{mensagem: string; item: any}>(`/lista-espera/admin/${id}/pular`, {}),
   checkinQR: (token: string) => pacienteApi.validarQR(token),
   kpis: () => api.get("/admin/kpis"),
   faturamento: (params?: Record<string, string>) => {

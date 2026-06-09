@@ -60,7 +60,7 @@ const PagamentoSucesso = () => {
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!pagamentoId && !sessionId) {
+    if (!pagamentoId) {
       setErro("Parâmetros inválidos na URL.");
       setLoading(false);
       return;
@@ -68,15 +68,7 @@ const PagamentoSucesso = () => {
 
     const buscar = async () => {
       try {
-        let pag: PagamentoStatus;
-
-        if (sessionId) {
-          pag = await apiFetch<PagamentoStatus>(
-            `/pagamentos/session/${sessionId}`
-          );
-        } else {
-          pag = await apiFetch<PagamentoStatus>(`/pagamentos/${pagamentoId}`);
-        }
+        const pag = await apiFetch<PagamentoStatus>(`/pagamentos/${pagamentoId}`);
 
         setPagamento(pag);
 
@@ -100,7 +92,7 @@ const PagamentoSucesso = () => {
     };
 
     buscar();
-  }, [sessionId, pagamentoId]);
+  }, [pagamentoId]);
 
   if (loading) {
     return (
@@ -108,7 +100,7 @@ const PagamentoSucesso = () => {
         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
           <p className="text-muted-foreground text-sm">
-            Verificando seu pagamento com o Stripe…
+            Verificando seu pagamento…
           </p>
         </div>
       </AppShell>

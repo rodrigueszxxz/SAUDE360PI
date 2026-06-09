@@ -140,6 +140,16 @@
     @apply text-foreground tracking-tight;
     font-weight: 600;
   }
+
+  /* Global focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* Accessible touch targets for buttons on mobile */
+  button, a {
+    @apply touch-manipulation;
+  }
 }
 
 @layer components {

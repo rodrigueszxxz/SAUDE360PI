@@ -36,6 +36,19 @@ router.post(
       return res.status(400).json({ erro: 'hora_fim deve ser maior que hora_inicio' });
     }
 
+    // SEGURANÇA IDOR: médico só pode editar a própria disponibilidade
+    if (req.usuario.papel === 'medico') {
+      const { autenticar: _, ...__ } = require('../middlewares/autenticacao');
+      const supabase = require('../config/db');
+      let q = supabase.from('medicos').select('id');
+      if (req.usuario.crm) q = q.eq('crm', req.usuario.crm);
+      else q = q.eq('nome', req.usuario.nome);
+      const { data: medicoRow } = await q.maybeSingle();
+      if (!medicoRow || String(medicoRow.id) !== String(medico_id)) {
+        return res.status(403).json({ erro: 'Você só pode editar a própria disponibilidade' });
+      }
+    }
+
     try {
       const { data, error } = await supabase
         .from('disponibilidade_medica')

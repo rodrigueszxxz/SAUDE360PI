@@ -1,45 +1,6 @@
 const pagamentoService = require('../services/pagamentoService');
-const stripeService = require('../services/stripeService');
 const pagamentoRepository = require('../repositories/pagamentoRepository');
 const pdfService = require('../services/pdfService');
-
-async function criarCheckout(req, res) {
-  try {
-    const { nome, cpf, agendamento_id, convenio, carteirinha, nome_titular, validade_plano } = req.body;
-
-    if (!stripeService.estaDisponivel()) {
-      return res.status(503).json({
-        erro: 'Gateway de pagamento indisponível. Configure STRIPE_SECRET_KEY no .env.',
-        codigo: 'STRIPE_NAO_CONFIGURADO',
-      });
-    }
-
-    const resultado = await pagamentoService.criarCheckoutStripe({
-      nome: nome || req.usuario?.nome,
-      cpf: cpf || req.usuario?.cpf,
-      agendamento_id,
-      convenio,
-      carteirinha,
-      nome_titular,
-      validade_plano,
-    });
-
-    res.status(201).json({
-      mensagem: 'Checkout Stripe criado com sucesso',
-      checkout_url: resultado.checkout_url,
-      session_id: resultado.session_id,
-      pagamento: resultado.pagamento,
-      valor_final: resultado.valor_final,
-    });
-  } catch (err) {
-    console.error('[checkout]', err.message);
-    const errosBadRequest = ['obrigatório', 'convênio', 'carteirinha', 'titular', 'validade', 'suportado'];
-    if (errosBadRequest.some(k => err.message.toLowerCase().includes(k))) {
-      return res.status(400).json({ erro: err.message });
-    }
-    res.status(500).json({ erro: 'Erro ao criar checkout' });
-  }
-}
 
 async function criarPix(req, res) {
   try {
@@ -100,38 +61,14 @@ async function consultar(req, res) {
   }
 }
 
-async function consultarPorSession(req, res) {
-  try {
-    const { session_id } = req.params;
-    const pagamento = await pagamentoRepository.buscarPorStripeSession(session_id);
-    if (!pagamento) return res.status(404).json({ erro: 'Pagamento não encontrado' });
-    res.json(pagamento);
-  } catch (err) {
-    console.error('[consultarPorSession]', err.message);
-    res.status(500).json({ erro: 'Erro ao consultar pagamento' });
-  }
-}
-
-async function webhookStripe(req, res) {
-  const assinatura = req.headers['stripe-signature'];
-  if (!assinatura) {
-    console.warn('[Stripe Webhook] Requisição sem stripe-signature');
-    return res.status(400).json({ erro: 'Assinatura ausente' });
-  }
-
-  try {
-    const resultado = await stripeService.processarWebhookStripe(req.body, assinatura);
-    res.json(resultado);
-  } catch (err) {
-    console.error('[Stripe Webhook] Erro:', err.message);
-    if (err.message.includes('Assinatura inválida')) {
-      return res.status(401).json({ erro: err.message });
-    }
-    res.status(500).json({ erro: 'Erro ao processar webhook' });
-  }
-}
 
 async function webhookInterno(req, res) {
+  // Protegido por segredo — NUNCA expor sem validação
+  const segredo = req.headers['x-webhook-secret'];
+  if (!segredo || segredo !== process.env.WEBHOOK_SECRET) {
+    console.warn('[webhook interno] Tentativa sem segredo válido de', req.ip);
+    return res.status(401).json({ erro: 'Não autorizado' });
+  }
 
   try {
     const id = req.body.pagamento_id ?? req.body.id;
@@ -175,7 +112,6 @@ async function relatorioAdmin(req, res) {
       total_reembolsado: 0,
       total_credito_retido: 0,
       quantidade_vendas: 0,
-      por_gateway: { STRIPE: 0, INTERNO: 0 },
     };
 
     for (const p of pagamentos) {
@@ -228,12 +164,9 @@ async function gerarRecibo(req, res) {
 }
 
 module.exports = {
-  criarCheckout,
   criarPix,
   criarBoleto,
   consultar,
-  consultarPorSession,
-  webhookStripe,
   webhookInterno,
   meusPagementos,
   relatorioAdmin,

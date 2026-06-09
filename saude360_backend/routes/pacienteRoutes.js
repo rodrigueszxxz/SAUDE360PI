@@ -228,7 +228,9 @@ router.patch(
   async (req, res) => {
     try {
       const campos = {};
-      const camposBasicos = ['nome', 'whatsapp', 'email', 'cpf'];
+      // SEGURANÇA: CPF e e-mail são identificadores únicos e NÃO podem ser trocados pelo paciente.
+      // Qualquer alteração nesses campos deve passar por processo de validação administrativa.
+      const camposBasicos = ['nome', 'whatsapp'];
       const camposExtendidos = [
         'data_nascimento', 'nome_social', 'rg', 'sexo', 'estado_civil',
         'telefone_fixo', 'cep', 'cidade', 'endereco',
@@ -243,8 +245,6 @@ router.patch(
         if (req.body[k] !== undefined) {
           if (k === 'convenio_validade' && req.body[k] && req.body[k].length === 7) {
             campos[k] = req.body[k] + '-01';
-          } else if (k === 'cpf' && req.body[k]) {
-            campos[k] = req.body[k].replace(/\D/g, '');
           } else {
             campos[k] = req.body[k] === '' ? null : req.body[k];
           }

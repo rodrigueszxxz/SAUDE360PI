@@ -172,7 +172,7 @@ export default function Login() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent" />
         <div className="absolute bottom-16 left-16 max-w-lg text-white">
-          <img src="/logo-full.png" alt="Saúde 360" className="h-16 mb-6 object-contain filter drop-shadow-md" />
+          <img src="/logo-full.png" alt="Saúde 360" className="h-24 mb-6 object-contain filter brightness-0 invert drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" />
           <h1 className="text-4xl font-bold mb-4 leading-tight">
             Agende. Cuide.<br />Viva melhor.
           </h1>
@@ -188,7 +188,7 @@ export default function Login() {
         <div className="w-full max-w-[400px] mx-auto">
           {/* Logo Mobile */}
           <div className="lg:hidden flex flex-col items-center mb-8">
-            <img src="/logo-full.png" alt="Saúde 360" className="h-14 object-contain mb-3" />
+            <img src="/logo-full.png" alt="Saúde 360" className="h-20 object-contain mb-3" />
           </div>
 
           <div className="mb-8">

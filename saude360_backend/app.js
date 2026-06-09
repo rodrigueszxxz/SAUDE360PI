@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 
 const { autenticar, exigirPapel, apenasPropriosDados } = require('./middlewares/autenticacao');
 const { auditarAcao } = require('./middlewares/auditoria');
+const sanitizarInput = require('./middlewares/sanitizarInput');
 
 const authRoutes            = require('./routes/authRoutes');
 const medicoRoutes          = require('./routes/medicoRoutes');
@@ -22,7 +23,6 @@ const prontuarioRoutes      = require('./routes/prontuarioRoutes');
 const adminRoutes           = require('./routes/adminRoutes');
 const disponibilidadeRoutes = require('./routes/disponibilidadeRoutes');
 const chatbotRoutes         = require('./routes/chatbotRoutes');
-const { swaggerUi, specs }  = require('./config/swagger');
 
 const { verificarExpirados } = require('./services/pagamentoService');
 const { verificarNoShows   } = require('./services/noShowService');
@@ -51,7 +51,9 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin && process.env.NODE_ENV !== 'production') return cb(null, true);
+    // Permite qualquer origem local/dev ou origens autorizadas via .env
+    if (process.env.NODE_ENV !== 'production') return cb(null, true);
+    if (!origin) return cb(null, true);
     if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
     return cb(new Error(`CORS: origin '${origin}' não autorizada`), false);
   },
@@ -86,28 +88,17 @@ const agendamentoLimiter = rateLimit({
 
 app.use(limiter);
 
-app.post(
-  '/pagamentos/webhook-stripe',
-  express.raw({ type: 'application/json' }),
-  pagamentoController.webhookStripe
-);
-
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
+// Sanitiza todos os inputs: previne prototype pollution e trunca payloads absurdos
+app.use(sanitizarInput);
 
 app.get('/health', (_req, res) => res.json({
   status: 'ok',
   version: '2.1.0',
   timestamp: new Date().toISOString(),
   ambiente: process.env.NODE_ENV || 'development',
-  stripe: process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('SUBSTITUA')
-    ? 'configurado'
-    : 'não configurado',
 }));
-
-if (process.env.NODE_ENV !== 'production') {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-}
 
 app.use('/auth', authLimiter, authRoutes);
 
@@ -159,6 +150,4 @@ app.listen(PORT, () => {
   console.log(`🔒 CORS:    ${ALLOWED_ORIGINS.join(', ')}`);
   console.log(`🔑 Auth:    JWT access (15min) + httpOnly refresh (7d)`);
   console.log(`👥 Papéis:  paciente | medico | admin | recepcionista`);
-  const stripeOk = process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('SUBSTITUA');
-  console.log(`💳 Stripe:  ${stripeOk ? '✅ Ativo' : '⚠️  Não configurado (configure STRIPE_SECRET_KEY)'}`);
 });

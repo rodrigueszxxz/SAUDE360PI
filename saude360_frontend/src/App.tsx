@@ -31,7 +31,6 @@ import Teleconsulta from "./pages/Teleconsulta";
 import DadosPaciente from "./pages/DadosPaciente";
 import PainelRecepcao from "./pages/PainelRecepcao";
 import ListaEspera from "./pages/ListaEspera";
-import Indicadores from "./pages/Indicadores";
 import KPIs from "./pages/KPIs";
 import RelatorioFinanceiro from "./pages/admin/RelatorioFinanceiro";
 
@@ -262,10 +261,10 @@ const App = () => (
               }
             />
             <Route
-              path="/admin/indicadores"
+              path="/admin/check-in"
               element={
                 <ProtectedRoute roles={["admin"]}>
-                  <Indicadores />
+                  <CheckIn />
                 </ProtectedRoute>
               }
             />
@@ -292,7 +291,6 @@ const App = () => (
             <Route path="/prontuario" element={<Navigate to="/login" replace />} />
             <Route path="/agenda" element={<Navigate to="/login" replace />} />
             <Route path="/kpis" element={<Navigate to="/login" replace />} />
-            <Route path="/indicadores" element={<Navigate to="/login" replace />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

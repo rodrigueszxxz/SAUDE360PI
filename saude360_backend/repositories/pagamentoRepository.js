@@ -35,17 +35,6 @@ async function buscarPorId(id) {
   return data;
 }
 
-async function buscarPorStripeSession(session_id) {
-  const { data, error } = await supabase
-    .from('pagamentos')
-    .select('*')
-    .eq('stripe_session_id', session_id)
-    .maybeSingle();
-
-  if (error) throw new Error(error.message);
-  return data;
-}
-
 async function atualizarStatus(id, novoStatus, extras = {}) {
   const { data, error } = await supabase
     .from('pagamentos')
@@ -80,4 +69,4 @@ async function buscarPorCPF(cpf) {
   return data || [];
 }
 
-module.exports = { criar, buscarPorId, buscarPorStripeSession, atualizarStatus, buscarExpirados, buscarPorCPF };
+module.exports = { criar, buscarPorId, atualizarStatus, buscarExpirados, buscarPorCPF };

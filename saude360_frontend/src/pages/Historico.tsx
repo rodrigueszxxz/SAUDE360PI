@@ -4,6 +4,7 @@ import { Download, FileText, Search, Loader2, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { meuAgendamentosApi, Agendamento } from "@/lib/api";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function formatarData(d?: string) {
   if (!d) return "—";
@@ -30,6 +31,7 @@ import { useAvaliarConsulta } from "@/hooks/useApi";
 const Historico = () => {
   const [busca, setBusca] = useState("");
   const [filtroAno, setFiltroAno] = useState("todos");
+  const navigate = useNavigate();
   
   const [agendamentoAvaliar, setAgendamentoAvaliar] = useState<Agendamento | null>(null);
   const [nota, setNota] = useState(0);
@@ -137,21 +139,21 @@ const Historico = () => {
                                 </button>
                               )}
                               <button 
-                                onClick={() => window.location.href = `/paciente/prontuario/${c.id}#Receitas`}
+                                onClick={() => navigate(`/paciente/prontuario/${c.id}#Receitas`)}
                                 className="px-2.5 py-1.5 rounded bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors flex items-center gap-1"
                                 title="Ver Receitas"
                               >
                                 <Download className="h-3 w-3" /> Receita
                               </button>
                               <button 
-                                onClick={() => window.location.href = `/paciente/prontuario/${c.id}#Atestados`}
+                                onClick={() => navigate(`/paciente/prontuario/${c.id}#Atestados`)}
                                 className="px-2.5 py-1.5 rounded bg-info/10 text-info text-xs font-semibold hover:bg-info/20 transition-colors flex items-center gap-1"
                                 title="Ver Atestados"
                               >
                                 <Download className="h-3 w-3" /> Atestado
                               </button>
                               <button 
-                                onClick={() => window.location.href = `/paciente/prontuario/${c.id}`}
+                                onClick={() => navigate(`/paciente/prontuario/${c.id}`)}
                                 className="h-8 w-8 rounded-lg hover:bg-muted inline-flex items-center justify-center text-muted-foreground" title="Ver prontuário completo"
                               >
                                 <FileText className="h-4 w-4" />

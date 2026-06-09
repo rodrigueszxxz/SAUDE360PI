@@ -104,10 +104,10 @@ const BuscaMedicos = () => {
   const limparFiltros = () => { setBusca(""); setEspFiltro("Todas"); setConvFiltro("Todos"); setApenFav(false); };
 
   const content = (
-    <div className="max-w-3xl mx-auto space-y-0">
+    <div className="w-full space-y-0 animate-fade-in">
 
       {/* ── HERO COM BUSCA ─────────────────────────────────────────── */}
-      <div className="bg-gradient-to-br from-primary to-primary-glow rounded-2xl p-6 mb-5 text-primary-foreground relative overflow-hidden">
+      <div className="bg-gradient-to-br from-primary to-primary-glow rounded-3xl p-8 md:p-12 mb-8 text-primary-foreground relative overflow-hidden shadow-lg">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_white,_transparent_60%)]" />
         <div className="relative">
           <p className="text-primary-foreground/80 text-sm font-medium mb-1">Saúde 360</p>
@@ -139,8 +139,8 @@ const BuscaMedicos = () => {
       </div>
 
       {/* ── SCROLL DE ESPECIALIDADES ───────────────────────────────── */}
-      <div className="mb-4">
-        <div className="flex gap-2 overflow-x-auto pb-2 scroll-hide -mx-4 px-4">
+      <div className="mb-6">
+        <div className="flex gap-2.5 overflow-x-auto pb-3 scroll-hide -mx-4 px-4 lg:mx-0 lg:px-0">
           {ESPECIALIDADES.map(esp => {
             const active = espFiltro === esp;
             return (
@@ -161,38 +161,38 @@ const BuscaMedicos = () => {
       </div>
 
       {/* ── BARRA DE FILTROS SECUNDÁRIOS ──────────────────────────── */}
-      <div className="flex items-center justify-between mb-4 gap-2">
-        <p className="text-sm text-muted-foreground">
-          {isLoading ? "Carregando..." : `${medicosFiltrados.length} profissional${medicosFiltrados.length !== 1 ? "is" : ""}`}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+        <p className="text-sm font-medium text-muted-foreground">
+          {isLoading ? "Carregando..." : `${medicosFiltrados.length} profissional${medicosFiltrados.length !== 1 ? "is" : ""} encontrado${medicosFiltrados.length !== 1 ? "s" : ""}`}
         </p>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {user && (
             <button
               onClick={() => setApenFav(v => !v)}
-              className={`h-9 px-3 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 border transition-colors ${
+              className={`h-10 px-4 rounded-xl text-sm font-semibold inline-flex items-center gap-2 border transition-colors ${
                 apenFav
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-card border-border/60 text-foreground hover:border-primary/40"
               }`}
             >
-              <Heart className={`h-3.5 w-3.5 ${apenFav ? "fill-current" : ""}`} />
+              <Heart className={`h-4 w-4 ${apenFav ? "fill-current" : ""}`} />
               Favoritos
             </button>
           )}
           <button
             onClick={() => setFiltrosAbertos(v => !v)}
-            className={`h-9 px-3 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 border transition-colors ${
+            className={`h-10 px-4 rounded-xl text-sm font-semibold inline-flex items-center gap-2 border transition-colors ${
               filtrosAbertos || convFiltro !== "Todos"
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-card border-border/60 text-foreground hover:border-primary/40"
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-card border-border/60 text-foreground hover:border-primary/40 hover:text-primary"
             }`}
           >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <SlidersHorizontal className="h-4 w-4" />
             Filtros
           </button>
           {hasFiltersActive && (
-            <button onClick={limparFiltros} className="h-9 px-3 rounded-lg text-xs font-medium text-destructive border border-destructive/30 hover:bg-destructive/5 transition-colors">
+            <button onClick={limparFiltros} className="h-10 px-4 rounded-xl text-sm font-semibold text-destructive border border-destructive/30 hover:bg-destructive/5 transition-colors">
               Limpar
             </button>
           )}
@@ -242,9 +242,9 @@ const BuscaMedicos = () => {
         </div>
       )}
 
-      {/* ── LISTA DE MÉDICOS (cards horizontais estilo agendacendap) ─ */}
+      {/* ── LISTA DE MÉDICOS (cards grid estilo agendacendap) ─ */}
       {!isLoading && !isError && (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-8">
           {medicosFiltrados.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <Search className="h-10 w-10 mx-auto mb-3 opacity-20" />
@@ -268,11 +268,11 @@ const BuscaMedicos = () => {
               return (
                 <article
                   key={m.id}
-                  className="card-elevated overflow-hidden hover:shadow-elevated transition-shadow"
+                  className="card-elevated flex flex-col overflow-hidden hover:shadow-lg transition-all hover:border-primary/30 group"
                 >
-                  <div className="flex items-stretch">
+                  <div className="flex items-stretch border-b border-border/40">
                     {/* Avatar */}
-                    <div className={`w-20 shrink-0 bg-gradient-to-br ${avatarClass} flex items-center justify-center`}>
+                    <div className={`w-24 shrink-0 bg-gradient-to-br ${avatarClass} flex items-center justify-center`}>
                       {m.foto_url ? (
                         <img src={m.foto_url} alt={m.nome} className="w-full h-full object-cover" />
                       ) : (
@@ -292,17 +292,17 @@ const BuscaMedicos = () => {
                         </div>
                         <button
                           onClick={() => handleToggleFav(m.id)}
-                          className={`shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                            isFav ? "text-destructive bg-destructive/5" : "text-muted-foreground hover:bg-muted"
+                          className={`shrink-0 h-9 w-9 rounded-xl flex items-center justify-center transition-colors ${
+                            isFav ? "text-destructive bg-destructive/10 hover:bg-destructive/20" : "text-muted-foreground hover:bg-muted"
                           }`}
                           title={isFav ? "Remover dos favoritos" : "Favoritar"}
                         >
-                          <Heart className={`h-4 w-4 ${isFav ? "fill-current" : ""}`} />
+                          <Heart className={`h-4.5 w-4.5 ${isFav ? "fill-current" : ""}`} />
                         </button>
                       </div>
 
                       {/* Rating */}
-                      <div className="flex items-center gap-1 mt-2">
+                      <div className="flex items-center gap-1 mt-2.5">
                         {[1,2,3,4,5].map(i => (
                           <Star
                             key={i}
@@ -344,21 +344,23 @@ const BuscaMedicos = () => {
 
                       {/* Bio */}
                       {m.mini_curriculo && (
-                        <p className="text-[11px] text-muted-foreground mt-2 line-clamp-2">{m.mini_curriculo}</p>
+                        <p className="text-xs text-muted-foreground mt-3 line-clamp-2 leading-relaxed">{m.mini_curriculo}</p>
                       )}
+                    </div>
+                  </div>
 
-                      {/* Rodapé do card */}
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                        <p className="text-xs text-success font-medium">✓ Disponível</p>
-                        <button
-                          id={`btn-agendar-${m.id}`}
-                          onClick={() => handleAgendar(m)}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary-glow transition-colors shadow-sm"
-                        >
-                          Agendar
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
+                  {/* Rodapé do card (Agendar fica no bottom fixo flex-grow) */}
+                  <div className="flex-1 bg-muted/10 p-4 flex flex-col justify-end">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-success font-medium flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-success"></span> Disponível</p>
+                      <button
+                        id={`btn-agendar-${m.id}`}
+                        onClick={() => handleAgendar(m)}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-glow transition-all shadow-sm group-hover:shadow-md"
+                      >
+                        Agendar
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 </article>

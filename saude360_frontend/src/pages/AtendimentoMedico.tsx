@@ -166,16 +166,15 @@ const AtendimentoMedico = () => {
     }
   }, [prontuario]);
 
-  /* ── Helpers ── */
-  const getPacienteCpf = () => (agendamento as any)?.cpf ?? "";
 
   /** Garante que o prontuário existe e retorna o ID */
   const garantirProntuario = useCallback(async (dadosExtra: any = {}) => {
+    const pacienteCpf = (agendamento as any)?.cpf ?? "";
     const payload = {
       ...form,
       ...dadosExtra,
       agendamento_id: Number(agendamento_id),
-      paciente_cpf: getPacienteCpf(),
+      paciente_cpf: pacienteCpf,
     };
 
     let result: any;
@@ -186,7 +185,7 @@ const AtendimentoMedico = () => {
     }
     queryClient.invalidateQueries({ queryKey: ["prontuario", agendamento_id] });
     return result?.id ?? prontuario?.id;
-  }, [form, prontuario, agendamento_id, agendamento]);
+  }, [form, prontuario, agendamento_id, agendamento, queryClient]);
 
   /* ── Mutation: salvar prontuário ── */
   const salvarMutation = useMutation({
@@ -194,7 +193,7 @@ const AtendimentoMedico = () => {
       ...dados,
       id: prontuario?.id,
       agendamento_id: Number(agendamento_id),
-      paciente_cpf: getPacienteCpf(),
+      paciente_cpf: (agendamento as any)?.cpf ?? "",
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prontuario", agendamento_id] });

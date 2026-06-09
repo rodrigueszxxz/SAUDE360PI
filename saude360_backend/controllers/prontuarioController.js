@@ -159,8 +159,6 @@ async function criar(req, res) {
     if (agErr || !ag) return res.status(404).json({ erro: 'Agendamento não encontrado' });
 
     // Médico só cria prontuário dos próprios pacientes
-    // VERIFICAÇÃO REMOVIDA PARA EVITAR ERROS DE SEED INCONSISTENTE NO DEMO
-    /*
     if (req.usuario.papel === 'medico') {
       let q = supabase.from('medicos').select('id');
       if (req.usuario.crm) q = q.eq('crm', req.usuario.crm);
@@ -171,7 +169,6 @@ async function criar(req, res) {
         return res.status(403).json({ erro: 'Você não é o médico deste agendamento' });
       }
     }
-    */
 
     // Montar payload apenas com colunas que existem na tabela
     const payload = {

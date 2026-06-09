@@ -38,7 +38,7 @@ export const MobileNav = ({ open, onClose }: { open: boolean; onClose: () => voi
       <aside className={`absolute left-0 top-0 h-full w-72 bg-card border-r border-border shadow-hero transition-transform ${open ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center justify-between h-16 px-5 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Saúde 360" className="h-8 object-contain" />
+            <img src="/logo.png" alt="Saúde 360" className="h-10 object-contain" />
             <p className="text-sm font-semibold">Saúde 360</p>
           </div>
           <button onClick={onClose} className="h-9 w-9 inline-flex items-center justify-center rounded-lg hover:bg-muted">

@@ -91,12 +91,12 @@ const KPIs = () => {
 const AuditTable = () => {
   const { data: logs, isLoading } = useQuery({
     queryKey: ['admin-auditoria'],
-    queryFn: () => adminApi.auditoria(10),
+    queryFn: () => adminApi.auditoria({ limit: '10' }),
     refetchInterval: 60000,
   });
 
   if (isLoading) return <div className="text-center text-muted-foreground text-sm p-4">Carregando logs...</div>;
-  if (!logs || logs.length === 0) return <div className="text-center text-muted-foreground text-sm p-4">Nenhum registro recente encontrado.</div>;
+  if (!logs?.dados || logs.dados.length === 0) return <div className="text-center text-muted-foreground text-sm p-4">Nenhum registro recente encontrado.</div>;
 
   return (
     <div className="overflow-x-auto">
@@ -111,14 +111,14 @@ const AuditTable = () => {
           </tr>
         </thead>
         <tbody className="divide-y divide-border/50">
-          {logs.map((log: any) => (
+          {logs.dados.map((log: any) => (
             <tr key={log.id} className="hover:bg-muted/20 transition-colors">
               <td className="px-4 py-3 whitespace-nowrap">
                 {new Date(log.criado_em).toLocaleString('pt-BR')}
               </td>
               <td className="px-4 py-3">
-                <span className="font-medium text-foreground">{log.usuario_email}</span>
-                <span className="block text-[10px] text-muted-foreground uppercase">{log.usuario_papel}</span>
+                <span className="font-medium text-foreground">{log.usuario_email || log.usuario_id}</span>
+                <span className="block text-[10px] text-muted-foreground uppercase">{log.papel || 'admin'}</span>
               </td>
               <td className="px-4 py-3">
                 <Chip variant={log.acao.includes('ERRO') || log.acao.includes('DELETE') ? 'destructive' : log.acao.includes('EDITAR') ? 'warning' : 'info'}>
@@ -126,7 +126,7 @@ const AuditTable = () => {
                 </Chip>
               </td>
               <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{log.entidade}</td>
-              <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{log.ip}</td>
+              <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{log.ip || 'Local'}</td>
             </tr>
           ))}
         </tbody>
